@@ -6,10 +6,11 @@
   "private": false,
   "scripts": {
     "lint": "eslint ./src/",
-    "test": "jest"
-
+    "test": "jest",
+    "start": "nodemon server"
   },
   "dependencies": {
+    "express-xml-bodyparser": "^0.3.0",
     "on-covid-19": "^0.1.3"
   },
   "devDependencies": {
