@@ -4,21 +4,33 @@
 
 
 const estimator = {
-  currentlyInfected: (reportedCases, number) => reportedCases * number,
+  currentlyInfected: (reportedCases, number, periodType) => {
+    let cas;
+    if (periodType === 'months') {
+      cas = reportedCases * number * 30;
+    }
+    if (periodType === 'days') {
+      cas = reportedCases * number;
+    }
+    if (periodType === 'weeks') {
+      cas = reportedCases * number * 7;
+    }
+    return cas;
+  },
   infectionsByRequstedTime: (reportedCases, number, timeToElapse, periodType) => {
     let power;
     let answer;
     if (periodType === 'months') {
       power = 2 ** Math.floor((timeToElapse * 30) / 3);
-      answer = estimator.currentlyInfected(reportedCases, number) * power;
+      answer = estimator.currentlyInfected(reportedCases, number, periodType) * power;
     }
     if (periodType === 'weeks') {
       power = 2 ** Math.floor((timeToElapse * 7) / 3);
-      answer = estimator.currentlyInfected(reportedCases, number) * power;
+      answer = estimator.currentlyInfected(reportedCases, number, periodType) * power;
     }
     if (periodType === 'days') {
       power = 2 ** Math.floor(timeToElapse / 3);
-      answer = estimator.currentlyInfected(reportedCases, number) * power;
+      answer = estimator.currentlyInfected(reportedCases, number, periodType) * power;
     }
     return answer;
   },
@@ -51,7 +63,7 @@ const estimator = {
   },
   dollarInFlight: (avgDailyIncomeInUSD, reportedCases, number, timeToElapse, periodType) => {
     const iBR = estimator.infectionsByRequstedTime(reportedCases, number, timeToElapse, periodType);
-    const dIF = (iBR * avgDailyIncomeInUSD * 0.73) / 30;
+    const dIF = (iBR * avgDailyIncomeInUSD * 0.73);
     return Math.floor(dIF);
   },
 
@@ -76,10 +88,10 @@ const covid19ImpactEstimator = () => {
     input,
     impact: {
       // challenge one
-      currentlyInfected: estimator.currentlyInfected(input.reportedCases, 10),
+      currentlyInfected: estimator.currentlyInfected(input.reportedCases, 10, input.periodType),
       infectionsByRequstedTime: estimator.infectionsByRequstedTime(input.reportedCases,
         10, input.timeToElapse, input.periodType),
-      // challenge two
+      // // challenge two
       severalCasesByRequestedTime: estimator.severeCasesByRequestedTime(input.reportedCases,
         10, input.timeToElapse, input.periodType),
       hospitalBedsByRequestedTime: estimator.hospitalBedsByRequestedTime(input.reportedCases,
@@ -96,7 +108,7 @@ const covid19ImpactEstimator = () => {
     },
     severeImpact: {
       // challenge one
-      currentlyInfected: estimator.currentlyInfected(input.reportedCases, 50),
+      currentlyInfected: estimator.currentlyInfected(input.reportedCases, 50, input.periodType),
       infectionsByRequstedTime: estimator.infectionsByRequstedTime(input.reportedCases,
         50, input.timeToElapse, input.periodType),
       // challenge two
