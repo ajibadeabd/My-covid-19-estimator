@@ -1,71 +1,74 @@
-const covid19ImpactEstimator = (data) => {
-  const OP = {
-    data: { ...data }, // the input data you got
-    Im: {}, // your best case estimation
-    SI: {}, // your severe case estimation
+const covid19ImpactEstimator = () => {
+  const input = {
+    region: {
+      name: 'africa',
+      avgAge: 19.7,
+      avgDailyIncomeInUSD: 4,
+      avgDailyIncomepopulation: 0.73,
+    },
+    periodType: 'days',
+    timeToElapse: 38,
+    reportedCases: 2747,
+    population: 92931687,
+    totalHospitalBeds: 678874,
   };
 
-  const getHBRT = (totalHospitalBeds, SCRT) => {
-    const useableBedSpace = totalHospitalBeds * 0.35;
-    return useableBedSpace - SCRT;
+  const estimator = {
+    impact: {},
+    severeImpact: {},
   };
-  const normDate = (period, figure) => {
-    let result = '';
-    if (period === 'days') {
-      result = figure;
+  const date = (periodType, timeToElapse) => {
+    let answer = periodType;
+    if (periodType === 'days') {
+      answer = timeToElapse;
     }
-    if (period === 'weeks') {
-      result = figure * 7;
+    if (periodType === 'weeks') {
+      answer = timeToElapse * 7;
     }
-    if (period === 'months') {
-      result = figure * 30;
+    if (periodType === 'months') {
+      answer = timeToElapse * 7 * 30;
     }
-    return result;
+    return answer;
   };
-  const ADIP = data.region.avgDailyIncomePopulation;
-  const ADIU = data.region.avgDailyIncomeInUSD;
-  const PT = data.periodType;
-  const TE = data.timeToElapse;
-  OP.Im.CI = data.reportedCases * 10;
-  OP.SI.CI = data.reportedCases * 50;
-  OP.Im.IRT = OP.Im.CI * 2 ** Math.trunc(normDate(PT, TE) / 3);
-  OP.SI.IRT = OP.SI.CI * 2 ** Math.trunc(normDate(PT, TE) / 3);
-  OP.Im.SCRT = Math.trunc(OP.Im.IRT * 0.15);
-  OP.SI.SCRT = Math.trunc(OP.SI.IRT * 0.15);
-  OP.Im.HBRT = Math.trunc(getHBRT(data.totalHospitalBeds, OP.Im.SCRT));
-  OP.SI.HBRT = Math.trunc(getHBRT(data.totalHospitalBeds, OP.SI.SCRT));
-  OP.Im.CFIRT = Math.trunc(OP.Im.IRT * 0.05);
-  OP.SI.CFIRT = Math.trunc(OP.SI.IRT * 0.05);
-  OP.Im.CFVRT = Math.trunc(OP.Im.IRT * 0.02);
-  OP.SI.CFVRT = Math.trunc(OP.SI.IRT * 0.02);
-  OP.Im.DIF = Math.trunc(
-    (OP.Im.IRT * ADIP * ADIU) / Math.trunc(normDate(PT, TE)),
-  );
-  OP.SI.DIF = Math.trunc(
-    (OP.SI.IRT * ADIP * ADIU) / Math.trunc(normDate(PT, TE)),
-  );
+  // challenge one
+  estimator.impact.currentlyInfected = input.reportedCases * 10;
+  estimator.severeImpact.currentlyInfected = input.reportedCases * 50;
+  estimator.impact.infectionByRequestedTime = estimator.impact.currentlyInfected
+   * (2 ** date(input.periodType, Math.trunc(input.timeToElapse / 3)));
+  estimator.severeImpact.infectionByRequestedTime = estimator.severeImpact.currentlyInfected
+   * (2 ** date(input.periodType, Math.trunc(input.timeToElapse / 3)));
+  // // challenge two
+  estimator.impact.severeCasesByRequestedTime = Math.trunc(estimator.impact.infectionByRequestedTime
+     * (15 / 100));
+  estimator.severeImpact.severeCasesByRequestedTime = Math.trunc(estimator
+    .severeImpact.infectionByRequestedTime * (15 / 100));
+  estimator.impact.hospitalBedsByReqquestedTime = Math.trunc((input.totalHospitalBeds
+     * (35 / 100)) - estimator.impact.severeCasesByRequestedTime);
+  estimator.severeImpact.hospitalBedsByReqquestedTime = Math.trunc((input.totalHospitalBeds
+     * (35 / 100)) - estimator.severeImpact.severeCasesByRequestedTime);
+  // challenge three
+  estimator.impact.casesForICUByRequestedTime = Math.trunc(estimator.impact.infectionByRequestedTime
+     * (5 / 100));
+  estimator.severeImpact.casesForICUByRequestedTime = Math.trunc(estimator.severeImpact
+    .infectionByRequestedTime * (5 / 100));
+  estimator.impact.casesForVentilatorsByRequestedTime = Math.trunc(estimator
+    .impact.infectionByRequestedTime * (2 / 100));
+  estimator.severeImpact.casesForVentilatorsByRequestedTime = Math.trunc(estimator
+    .severeImpact.infectionByRequestedTime * (2 / 100));
+  estimator.impact.dollarInFlight = Math.trunc((estimator.impact.infectionByRequestedTime
+     * input.region.avgDailyIncomeInUSD * input.region.avgDailyIncomepopulation)
+      / date(input.periodType, input.timeToElapse));
+  estimator.severeImpact.dollarInFlight = Math.trunc((estimator
+    .severeImpact.infectionByRequestedTime
+     * input.region.avgDailyIncomeInUSD * input.region.avgDailyIncomepopulation)
+      / date(input.periodType, input.timeToElapse));
 
-  // OP object
+  // (estimator.impact.infectionByRequestedTime * input.avgDailyIncomeInUSD
+  //   * ) /
   return {
-    data: { ...data },
-    impact: {
-      currentlyInfected: OP.Im.CI,
-      infectionsByRequestedTime: OP.Im.IRT,
-      severeCasesByRequestedTime: OP.Im.SCRT,
-      hospitalBedsByRequestedTime: OP.Im.HBRT,
-      casesForICUByRequestedTime: OP.Im.CFIRT,
-      casesForVentilatorsByRequestedTime: OP.Im.CFVRT,
-      dollarsInFlight: OP.Im.DIF,
-    },
-    severeImpact: {
-      currentlyInfected: OP.SI.CI,
-      infectionsByRequestedTime: OP.SI.IRT,
-      severeCasesByRequestedTime: OP.SI.SCRT,
-      hospitalBedsByRequestedTime: OP.SI.HBRT,
-      casesForICUByRequestedTime: OP.SI.CFIRT,
-      casesForVentilatorsByRequestedTime: OP.SI.CFVRT,
-      dollarsInFlight: OP.SI.DIF,
-    },
+    // data: { ...data },
+    impact: estimator.impact,
+    SevereImpact: estimator.severeImpact,
   };
 };
 
