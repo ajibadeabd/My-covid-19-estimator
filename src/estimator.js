@@ -1,23 +1,8 @@
-const covid19ImpactEstimator = () => {
+const covid19ImpactEstimator = (data) => {
   const OP = {
-    // data: { ...data }, // the input data you got
+    data: { ...data }, // the input data you got
     Im: {}, // your best case estimation
     SI: {}, // your severe case estimation
-  };
-
-  const data = {
-    region: {
-      name: 'africa',
-      avgAge: 19.7,
-      avgDailyIncomeInUSD: 4,
-      avgDailyIncomepopulation: 0.73,
-    },
-
-    periodType: 'days',
-    timeToElapse: 38,
-    reportedCases: 2747,
-    population: 92931687,
-    totalHospitalBeds: 678874,
   };
 
   const getHBRT = (totalHospitalBeds, SCRT) => {
