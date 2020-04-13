@@ -41,7 +41,7 @@ const covid19ImpactEstimator = (data) => {
   OP.Im.DIF = Math.trunc(
     (OP.Im.IRT * ADIP * ADIU) / Math.trunc(normDate(PT, TE)),
   );
-  OP.SI.DIF = Math.trunc(
+  OP.SI.DIF = Math.trunc( 
     (OP.SI.IRT * ADIP * ADIU) / Math.trunc(normDate(PT, TE)),
   );
 
